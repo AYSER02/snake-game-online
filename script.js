@@ -10,7 +10,33 @@ let snake = [{ x: 10, y: 10 }];
 let food = { x: 5, y: 5 };
 let direction = { x: 0, y: 0 };
 let score = 0;
-let highScore = 0; // Track the highest score
+let highScore = 0;
+let borderMode = true; // Default to border mode
+
+// DOM elements
+const menu = document.getElementById("menu");
+const borderModeButton = document.getElementById("borderMode");
+const borderlessModeButton = document.getElementById("borderlessMode");
+const gameContainer = document.querySelector(".game-container");
+
+// Event listeners for mode selection
+borderModeButton.addEventListener("click", () => {
+  borderMode = true;
+  startGame();
+});
+
+borderlessModeButton.addEventListener("click", () => {
+  borderMode = false;
+  startGame();
+});
+
+// Start the game
+function startGame() {
+  menu.style.display = "none"; // Hide the menu
+  gameContainer.style.display = "block"; // Show the game
+  resetGame();
+  gameLoop();
+}
 
 // Game loop
 function gameLoop() {
@@ -24,10 +50,18 @@ function update() {
   // Move snake
   const head = { x: snake[0].x + direction.x, y: snake[0].y + direction.y };
 
-  // Check for collision with borders
-  if (head.x < 0 || head.x >= tileCount || head.y < 0 || head.y >= tileCount) {
-    resetGame();
-    return;
+  // Border mode: Check for collision with borders
+  if (borderMode) {
+    if (head.x < 0 || head.x >= tileCount || head.y < 0 || head.y >= tileCount) {
+      resetGame();
+      return;
+    }
+  } else {
+    // Borderless mode: Wrap around the canvas
+    if (head.x < 0) head.x = tileCount - 1;
+    if (head.x >= tileCount) head.x = 0;
+    if (head.y < 0) head.y = tileCount - 1;
+    if (head.y >= tileCount) head.y = 0;
   }
 
   // Check for collision with itself
@@ -73,12 +107,14 @@ function draw() {
   ctx.fillStyle = "white";
   ctx.font = "20px Arial";
   ctx.fillText(`Score: ${score}`, 10, 30);
-  ctx.fillText(`High Score: ${highScore}`, 10, 60); // Display high score
+  ctx.fillText(`High Score: ${highScore}`, 10, 60);
 
-  // Draw borders
-  ctx.strokeStyle = "white";
-  ctx.lineWidth = 2;
-  ctx.strokeRect(0, 0, canvas.width, canvas.height);
+  // Draw borders if in border mode
+  if (borderMode) {
+    ctx.strokeStyle = "white";
+    ctx.lineWidth = 2;
+    ctx.strokeRect(0, 0, canvas.width, canvas.height);
+  }
 }
 
 // Place food randomly
@@ -102,7 +138,7 @@ function resetGame() {
 
 // Handle keyboard input
 window.addEventListener("keydown", e => {
-  switch (e.key) {
+  switch (e.key ) {
     // Arrow keys
     case "ArrowUp":
     case "w": // WASD support
